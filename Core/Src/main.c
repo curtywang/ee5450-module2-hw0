@@ -76,6 +76,17 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 /**
+ * @brief interrupt handler to set event flags
+ * @param GPIO_Pin
+ */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == GPIO_PIN_13) {
+        tx_event_flags_set(&event_flags_0, EVT_BUTTON_PRESSED, TX_OR);
+    }
+}
+
+
+/**
  * @brief function for defining the ThreadX application
  * @param first_unused_memory
  */
@@ -103,9 +114,9 @@ void tx_application_define(void* first_unused_memory) {
 void thread_blink(ULONG thread_input) {
     unsigned int status;
     while (1) {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
         tx_thread_sleep(100);  // this is in ticks, which is default 100 per second.
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
         tx_thread_sleep(100);
     }
 
@@ -146,7 +157,6 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_OCTOSPI1_Init();
-  MX_SPI1_Init();
   MX_SPI3_Init();
   MX_UART4_Init();
   MX_USART1_UART_Init();

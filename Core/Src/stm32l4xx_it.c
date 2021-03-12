@@ -165,7 +165,6 @@ void DebugMon_Handler(void)
   /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
-
 /**
   * @brief This function handles System tick timer.
   */
