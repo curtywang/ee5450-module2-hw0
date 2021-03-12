@@ -30,6 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "tx_api.h"
 /* USER CODE END Includes */
 
@@ -44,13 +45,26 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+/* USER CODE BEGIN PTD */
+#define STACK_SIZE 1024
+#define BYTE_POOL_SIZE 9120
+#define BLOCK_POOL_SIZE 100
+#define QUEUE_SIZE 100
+#define EVT_BUTTON_PRESSED 0x1
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+TX_THREAD thread_0;
+TX_THREAD thread_1;
+TX_BYTE_POOL byte_pool_0;
+TX_MUTEX mtx_led;
+TX_EVENT_FLAGS_GROUP event_flags_0;
+TX_BLOCK_POOL block_pool_0;
+UCHAR memory_area[BYTE_POOL_SIZE];
+void thread_blink(ULONG thread_input);
+void thread_handle_button(ULONG thread_input);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -61,6 +75,41 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/**
+ * @brief function for defining the ThreadX application
+ * @param first_unused_memory
+ */
+void tx_application_define(void* first_unused_memory) {
+    char* pointer = TX_NULL;
+    unsigned int status;
+
+    tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, BYTE_POOL_SIZE);
+
+    tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, STACK_SIZE, TX_NO_WAIT);
+    status = tx_thread_create(&thread_0, "thread 0", thread_blink, 0,
+                              pointer, STACK_SIZE,
+                              1, 1, TX_NO_TIME_SLICE, TX_AUTO_START);
+    if (status != TX_SUCCESS)
+    {
+        printf("thread creation failed\r\n");
+    }
+
+}
+
+/**
+ * @brief thread that blinks at 1 second interval.
+ * @param thread_input
+ */
+void thread_blink(ULONG thread_input) {
+    unsigned int status;
+    while (1) {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+        tx_thread_sleep(100);  // this is in ticks, which is default 100 per second.
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+        tx_thread_sleep(100);
+    }
+
+}
 
 /* USER CODE END 0 */
 
@@ -105,7 +154,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_USB_Init();
   /* USER CODE BEGIN 2 */
-
+  tx_kernel_enter();
   /* USER CODE END 2 */
 
   /* Infinite loop */
