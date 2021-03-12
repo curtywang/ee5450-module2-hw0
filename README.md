@@ -4,6 +4,11 @@ Homework on resource control and interrupt handling with ThreadX
 In this homework, you will practice using the atomic data structures (or synchronization primitives)
 to protect the GPIO pins, along with basic ThreadX application setup.
 
+## ThreadX Compilation Setup
+Since we are using CMake, the updated CMakeLists_template.txt should be able to add threadx as a subdirectory.
+However, you will need to go into your CLion settings and change the CMake settings under "Build, Execution, Deployment".
+In "CMake options:", add `-GNinja`, which will tell CMake to use the Ninja tool that ThreadX requires.
+
 ## Thread 0: LED1 Blinker
 This thread is simple.  Simply blink LD1 (PA_5) at a frequency of 1 second with a duty cycle of 50%.
 
