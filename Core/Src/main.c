@@ -63,7 +63,8 @@ TX_MUTEX mtx_led;
 TX_EVENT_FLAGS_GROUP event_flags_0;
 TX_BLOCK_POOL block_pool_0;
 UCHAR memory_area[BYTE_POOL_SIZE];
-void thread_blink(ULONG thread_input);
+
+_Noreturn void thread_blink(ULONG thread_input);
 void thread_handle_button(ULONG thread_input);
 /* USER CODE END PV */
 
@@ -94,10 +95,21 @@ void tx_application_define(void* first_unused_memory) {
     char* pointer = TX_NULL;
     unsigned int status;
 
+    tx_event_flags_create(&event_flags_0, "event flags 0");
+
     tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, BYTE_POOL_SIZE);
 
     tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, STACK_SIZE, TX_NO_WAIT);
-    status = tx_thread_create(&thread_0, "thread 0", thread_blink, 0,
+    status = tx_thread_create(&thread_0, "thread 0", thread_blink, 1,
+                              pointer, STACK_SIZE,
+                              1, 1, TX_NO_TIME_SLICE, TX_AUTO_START);
+    if (status != TX_SUCCESS)
+    {
+        printf("thread creation failed\r\n");
+    }
+
+    tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, STACK_SIZE, TX_NO_WAIT);
+    status = tx_thread_create(&thread_1, "thread 1", thread_blink, 2,
                               pointer, STACK_SIZE,
                               1, 1, TX_NO_TIME_SLICE, TX_AUTO_START);
     if (status != TX_SUCCESS)
@@ -111,13 +123,21 @@ void tx_application_define(void* first_unused_memory) {
  * @brief thread that blinks at 1 second interval.
  * @param thread_input
  */
-void thread_blink(ULONG thread_input) {
+_Noreturn void thread_blink(ULONG thread_input) {
     unsigned int status;
     while (1) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-        tx_thread_sleep(100);  // this is in ticks, which is default 100 per second.
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-        tx_thread_sleep(100);
+        if (thread_input == 1) {
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+            tx_thread_sleep(50);  // this is in ticks, which is default 100 per second.
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+            tx_thread_sleep(50);
+        }
+        if (thread_input == 2) {
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+            tx_thread_sleep(50);  // this is in ticks, which is default 100 per second.
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+            tx_thread_sleep(50);
+        }
     }
 
 }
