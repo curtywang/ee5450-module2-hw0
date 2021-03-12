@@ -30,6 +30,7 @@ on if the button is pressed, and keep LED2 on for as long as the button is
 held down.
 
 To implement this button handling, take advantage of the event flag structure.
+Make sure to debounce (simply just sleep 20 milliseconds after the event flag lets you through).
 Wait until an event happens to decide whether to:
 1. Turn on LED2 if BUTTON1 is pressed: get access to LED2 using the mutex and turn LED2 on.
 2. Turn off LED2 if BUTTON1 is released: turn off LED2 and release access to LED2.
